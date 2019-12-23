@@ -1,0 +1,13 @@
+---
+# defaults file for install-jenkins
+#
+
+download_url: http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+download_folder: "{{ JENKINS_HOME }}"
+JENKINS_HOME: "{{ ansible_env.HOME }}/jenkins-home"
+JENKINS_WAR: "{{ JENKINS_HOME }}/jenkins.war"
+
+REF: "{{ JENKINS_HOME }}/ref"
+JENKINS_UC: https://updates.jenkins.io
+JENKINS_UC_EXPERIMENTAL: https://updates.jenkins.io/experimental
+JENKINS_INCREMENTALS_REPO_MIRROR: https://repo.jenkins-ci.org/incrementals

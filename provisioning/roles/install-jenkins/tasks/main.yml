@@ -1,0 +1,73 @@
+---
+# tasks file for install-openjdk
+
+  - name: Creates download directory if not exists
+    file:
+      path: "{{ download_folder }}"
+      state: directory
+
+
+  - name: Download Jenkins War File
+    get_url:
+      url: "{{ download_url }}"
+      dest: "{{ JENKINS_WAR }}"
+
+  
+  - name: Creates Jenkins Home directory if not exists 
+    file:
+      path: "{{ JENKINS_HOME }}"
+      state: directory
+
+  
+  - name: Creates Ref directory if not exists 
+    file:
+      path: "{{ REF }}"
+      state: directory
+
+  - name: Copy files to download preinstalling plugins
+    copy:
+      src: "{{ item }}"
+      dest: "{{ REF }}"
+      mode: u=rwx,g=r,o=r
+    with_fileglob:
+    - "{{ role_path }}/files/*"
+
+  - name: Run install-plugins.sh
+    shell: "{{ REF }}/install-plugins.sh  < /home/ubuntu/jenkins-home/ref/plugins.txt"
+    environment:
+      JENKINS_WAR: "{{ JENKINS_WAR }}"
+      REF: "{{ REF }}"
+      JENKINS_UC: https://updates.jenkins.io
+      JENKINS_UC_EXPERIMENTAL: https://updates.jenkins.io/experimental
+      JENKINS_INCREMENTALS_REPO_MIRROR: https://repo.jenkins-ci.org/incrementals
+   
+  
+  - name: Get downloaded plugins
+    find:
+      paths: "{{ REF }}/plugins"
+    register: downloaded_plugins_list
+
+
+  - name: Creates Jenkins Home Plugin directory if not exists 
+    file:
+      path: "{{ JENKINS_HOME }}/plugins"
+      state: directory
+  
+  
+  - name: Copy downloaded plugins to  JENKINS_HOME/plugins directory
+    copy:
+      src: "{{ item.path }}"
+      dest: "{{ JENKINS_HOME }}/plugins/"
+      remote_src: yes
+    with_items: "{{ downloaded_plugins_list.files }}"
+
+  - name: Start Jenkins Server
+    shell: "nohup java  -jar  {{ download_folder }}/jenkins.war  &" 
+    #shell: "java -Dhudson.slaves.NodeProvisioner.initialDelay=0 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85 -Djenkins.security.ClassFilterImpl.SUPPRESS_WHITELIST=true   -jar -Xms9216M -Xmx12288M {{download_folder}}/jenkins.war --httpPort=8080  &" 
+    environment:
+      JENKINS_HOME: "{{ JENKINS_HOME }}"
+      
+      #  - name: Wait to be installed
+      # shell: "sleep 30" 
+
+

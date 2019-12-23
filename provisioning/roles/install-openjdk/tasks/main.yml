@@ -1,0 +1,10 @@
+---
+# tasks file for install-openjdk
+
+  - name: install openjdk 8
+    become: true
+    apt:
+      name: openjdk-8-jdk
+      state: latest
+      update_cache: yes
+
